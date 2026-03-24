@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accès Sécurisé Maison</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #03a9f4;
+            --bg-color: #101114; /* Mode sombre type HA */
+            --card-bg: #1c1c1e;
+            --text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .ha-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { font-size: 1.2rem; margin-bottom: 20px; font-weight: 400; color: #aaa; }
+
+        /* Affichage des points du code PIN */
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .dot {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #555;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .dot.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        /* Pavé numérique */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .key {
+            background: #2c2c2e;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 20px;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+            margin: auto;
+        }
+
+        .key:active { background: #3a3a3c; transform: scale(0.9); }
+        .key.special { font-size: 1rem; background: transparent; }
+
+        #status-msg {
+            margin-top: 20px;
+            height: 20px;
+            font-size: 0.9rem;
+        }
+
+        .error { color: #ff5252; animation: shake 0.3s; }
+        .success { color: #4caf50; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ha-card">
+        <h1 id="title">Entrez le code PIN</h1>
+        
+        <div class="pin-display" id="pinDisplay">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+
+        <div class="keypad">
+            <button class="key" onclick="addNumber(1)">1</button>
+            <button class="key" onclick="addNumber(2)">2</button>
+            <button class="key" onclick="addNumber(3)">3</button>
+            <button class="key" onclick="addNumber(4)">4</button>
+            <button class="key" onclick="addNumber(5)">5</button>
+            <button class="key" onclick="addNumber(6)">6</button>
+            <button class="key" onclick="addNumber(7)">7</button>
+            <button class="key" onclick="addNumber(8)">8</button>
+            <button class="key" onclick="addNumber(9)">9</button>
+            <button class="key special" onclick="clearPin()"><i class="fas fa-times"></i></button>
+            <button class="key" onclick="addNumber(0)">0</button>
+            <button class="key special" onclick="deleteLast()"><i class="fas fa-backspace"></i></button>
+        </div>
+
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        let currentPin = "";
+        const dots = document.querySelectorAll('.dot');
+        const status = document.getElementById('status-msg');
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index < currentPin.length);
+            });
+        }
+
+        function addNumber(num) {
+            if (currentPin.length < 6) {
+                currentPin += num;
+                updateDots();
+                if (currentPin.length === 6) {
+                    verifyPin();
+                }
+            }
+        }
+
+        function deleteLast() {
+            currentPin = currentPin.slice(0, -1);
+            updateDots();
+            status.innerText = "";
+        }
+
+        function clearPin() {
+            currentPin = "";
+            updateDots();
+            status.innerText = "";
+        }
+
+        function verifyPin() {
+            status.innerText = "Vérification...";
+            status.className = "";
+
+            // Envoi du PIN au fichier PHP
+            fetch('trigger.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'pin=' + currentPin
+            })
+            .then(response => {
+                if (response.ok) {
+                    status.className = "success";
+                    status.innerText = "✅ Action réussie !";
+                    setTimeout(clearPin, 2000);
+                } else {
+                    status.className = "error";
+                    status.innerText = "❌ Code incorrect";
+                    setTimeout(clearPin, 1000);
+                }
+            })
+            .catch(() => {
+                status.className = "error";
+                status.innerText = "Erreur de connexion";
+            });
+        }
+    </script>
+</body>
+</html>
