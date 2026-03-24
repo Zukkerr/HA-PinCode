@@ -178,9 +178,12 @@ if (isset($_POST['delete_code'])) {
 </head>
 <body>
 
-    <div class="top-bar">
-        <div><i class="fas fa-user-circle"></i> Connecté en tant que <b><?php echo htmlspecialchars($_SESSION['username']); ?></b></div>
-        <a href="?logout=1" style="color: #f44336; text-decoration: none; font-size: 0.9rem;"><i class="fas fa-sign-out-alt"></i> Quitter</a>
+<div class="top-bar">
+        <div><i class="fas fa-user-circle"></i> Connecté : <b><?php echo htmlspecialchars($_SESSION['username']); ?></b></div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="pin.html" style="color: #4CAF50; text-decoration: none; font-size: 0.9rem; font-weight:bold; border: 1px solid #4CAF50; padding: 5px 10px; border-radius: 4px;"><i class="fas fa-th"></i> Tester un code</a>
+            <a href="?logout=1" style="color: #f44336; text-decoration: none; font-size: 0.9rem;"><i class="fas fa-sign-out-alt"></i> Quitter</a>
+        </div>
     </div>
 
     <div class="card">
