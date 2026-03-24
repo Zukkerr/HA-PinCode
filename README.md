@@ -6,7 +6,6 @@ Ce module permet de gérer un clavier/lecteur de badge RFID Wiegand branché sur
 - Panneau d'administration intégré à la barre latérale de HA (Ingress).
 - Création de codes PIN / Badges à usage unique ou permanent.
 - Déclenchement de Webhooks Home Assistant.
-- Cryptage AES-256 des données locales.
 
 ## 📦 Installation
 
